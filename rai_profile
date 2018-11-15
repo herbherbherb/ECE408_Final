@@ -1,0 +1,11 @@
+profile:
+  firstname: Rongzi
+  lastname: Wang
+  username: rwang67
+  email: rwang67@illinois.edu
+  access_key: auth0|5bc97cd449b84629ca63f97d
+  secret_key: JGFyZ29uMmkkdj0xOSRtPTMyNzY4LHQ9NCxwPTQkRmVISHM1NTk3N1AveVZid0k4T3lhQSRoZmlRcW50MEZaSzVFQm45d21kblp0QlBVS1ZYRE1CQ09vYzBSSCtsNzJF
+  affiliation: uiuc
+  team:
+    name: kriskr
+  role: ECE408

@@ -9,7 +9,7 @@ namespace mxnet
 namespace op
 {
 
-#define TILE_WIDTH 16  // FIXME change this for performance (check computibility and number of threads per block allowed)
+#define TILE_WIDTH 24  // FIXME change this for performance (check computibility and number of threads per block allowed)
 
 __global__ void forward_kernel(float *y, const float *x, const float *k, const int B, const int M, const int C, const int H, const int W, const int K)
 {
@@ -24,20 +24,22 @@ __global__ void forward_kernel(float *y, const float *x, const float *k, const i
     const int H_out = H - K + 1;
     const int W_out = W - K + 1;
 
-    int W_grid = W_out / TILE_WIDTH;
-    if (W_out % TILE_WIDTH > 0) ++W_grid;
+    int W_grid = ceil((double)W_out / TILE_WIDTH);
+    // int W_grid = W_out / TILE_WIDTH;
+    // if (W_out % TILE_WIDTH > 0) ++W_grid;
 
-// An example use of these macros:
-// float a = y4d(0,0,0,0)
-// y4d(0,0,0,0) = a
-#define y4d(i3, i2, i1, i0) y[(i3) * (M * H_out * W_out) + (i2) * (H_out * W_out) + (i1) * (W_out) + i0]
-#define x4d(i3, i2, i1, i0) x[(i3) * (C * H * W) + (i2) * (H * W) + (i1) * (W) + i0]
-#define k4d(i3, i2, i1, i0) k[(i3) * (C * K * K) + (i2) * (K * K) + (i1) * (K) + i0]
+    // An example use of these macros:
+    // float a = y4d(0,0,0,0)
+    // y4d(0,0,0,0) = a
+    #define y4d(i3, i2, i1, i0) y[(i3) * (M * H_out * W_out) + (i2) * (H_out * W_out) + (i1) * (W_out) + i0]
+    #define x4d(i3, i2, i1, i0) x[(i3) * (C * H * W) + (i2) * (H * W) + (i1) * (W) + i0]
+    #define k4d(i3, i2, i1, i0) k[(i3) * (C * K * K) + (i2) * (K * K) + (i1) * (K) + i0]
 
     int b = blockIdx.x;
     int m = blockIdx.y;
     int h = blockIdx.z / W_grid + threadIdx.y;
     int w = blockIdx.z % W_grid + threadIdx.x;
+
     float result = 0.0;
     if (h < H_out && w < W_out) {
       for (int c = 0; c < C; ++c) {
@@ -50,9 +52,9 @@ __global__ void forward_kernel(float *y, const float *x, const float *k, const i
       y4d(b, m, h, w) = result;
     }
 
-#undef y4d
-#undef x4d
-#undef k4d
+    #undef y4d
+    #undef x4d
+    #undef k4d
 }
 
 /*
@@ -74,16 +76,20 @@ void forward<gpu, float>(mshadow::Tensor<gpu, 4, float> &y, const mshadow::Tenso
     const int C = x.shape_[1];  // Number of input feature maps
     const int H = x.shape_[2];  // Height of input image
     const int W = x.shape_[3];  // Width of input image
-    const int K = k.shape_[3];  // Width of square filter
+    const int K = w.shape_[3];  // Width of square filter
 
     // Set the kernel dimensions
     const int H_out = H - K + 1;
     const int W_out = W - K + 1;
-    int W_grid = W_out / TILE_WIDTH;
-    if (W_out % TILE_WIDTH > 0) ++W_grid;
-    int H_grid = H_out / TILE_WIDTH;
-    if (H_out % TILE_WIDTH > 0) ++H_grid;
-    const int Z = W_grid * H_grid;
+    // int W_grid = W_out / TILE_WIDTH;
+    // if (W_out % TILE_WIDTH > 0) ++W_grid;
+    // int H_grid = H_out / TILE_WIDTH;
+    // if (H_out % TILE_WIDTH > 0) ++H_grid;
+    // const int Z = W_grid * H_grid;
+    int W_grid = ceil((double)W_out/TILE_WIDTH); // number of horizontal tiles per output map
+    int H_grid = ceil((double)H_out/TILE_WIDTH); // number of vertical tiles per output map
+    int Z = H_grid * W_grid;
+
     dim3 gridDim(B, M, Z);
     dim3 blockDim(TILE_WIDTH, TILE_WIDTH, 1);
 

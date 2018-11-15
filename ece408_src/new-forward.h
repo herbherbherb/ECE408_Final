@@ -31,7 +31,7 @@ void forward(mshadow::Tensor<cpu, 4, DType> &y, const mshadow::Tensor<cpu, 4, DT
     int H_out = H - K + 1;
     int W_out = W - K + 1;
 
-    for (int b = 0; b < B; ++b) {  // for each image in the batch
+    for (int b = 0; b < B; ++b) {  // for each image in the batch 
         for(int m = 0; m < M; ++m){  // for each output feature maps
             for(int h = 0; h < H_out; ++h){  // for each output element
                 for(int w = 0; w < W_out; ++w){
@@ -39,10 +39,11 @@ void forward(mshadow::Tensor<cpu, 4, DType> &y, const mshadow::Tensor<cpu, 4, DT
                     for(int c = 0; c < C; ++c){ // sum over all input feature maps
                         for(int p = 0; p < K; ++p){  // Iterating over KxK filter
                             for(int q = 0; q < K; ++q){
-                                y[b][m][h][w] += x[b][c][h + p][w + q] * k[m][c][p][q];            
+                              
+                                    y[b][m][h][w] += x[b][c][h + p][w + q] * k[m][c][p][q];            
                             }
                         }
-                    }
+                    }   
                 }
             }
         }

@@ -37,8 +37,8 @@ __global__ void forward_kernel(float *y, const float *x, const float *k, const i
 
     int b = blockIdx.x;
     int m = blockIdx.y;
-    int h = blockIdx.z / W_grid + threadIdx.y;
-    int w = blockIdx.z % W_grid + threadIdx.x;
+    int h = (blockIdx.z / W_grid) * TILE_WIDTH + threadIdx.y;
+    int w = (blockIdx.z % W_grid) * TILE_WIDTH + threadIdx.x;
 
     float result = 0.0;
     if (h < H_out && w < W_out) {

@@ -24,10 +24,7 @@ __global__ void forward_kernel(float *y, const float *x, const float *k, const i
     const int H_out = H - K + 1;
     const int W_out = W - K + 1;
 
-    int W_grid = ceil((double)W_out / TILE_WIDTH);
-    // int W_grid = W_out / TILE_WIDTH;
-    // if (W_out % TILE_WIDTH > 0) ++W_grid;
-
+    int W_grid = ceil((double) W_out / TILE_WIDTH);
 
     #define y4d(i3, i2, i1, i0) y[(i3) * (M * H_out * W_out) + (i2) * (H_out * W_out) + (i1) * (W_out) + i0]
     #define x4d(i3, i2, i1, i0) x[(i3) * (C * H * W) + (i2) * (H * W) + (i1) * (W) + i0]
@@ -79,13 +76,8 @@ void forward<gpu, float>(mshadow::Tensor<gpu, 4, float> &y, const mshadow::Tenso
     // Set the kernel dimensions
     const int H_out = H - K + 1;
     const int W_out = W - K + 1;
-    // int W_grid = W_out / TILE_WIDTH;
-    // if (W_out % TILE_WIDTH > 0) ++W_grid;
-    // int H_grid = H_out / TILE_WIDTH;
-    // if (H_out % TILE_WIDTH > 0) ++H_grid;
-    // const int Z = W_grid * H_grid;
-    int W_grid = ceil((double)W_out/TILE_WIDTH); // number of horizontal tiles per output map
-    int H_grid = ceil((double)H_out/TILE_WIDTH); // number of vertical tiles per output map
+    int W_grid = ceil((double) W_out / TILE_WIDTH); // number of horizontal tiles per output map
+    int H_grid = ceil((double) H_out / TILE_WIDTH); // number of vertical tiles per output map
     int Z = H_grid * W_grid;
 
     dim3 gridDim(B, M, Z);
